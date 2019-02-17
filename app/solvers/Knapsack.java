@@ -10,6 +10,7 @@ import play.libs.NativeLoader;
 
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
 
 
 import static models.knapsack.ServiceError.WEIGHT_OUT_OF_BOUNDS_ERROR;
@@ -27,20 +28,16 @@ public class Knapsack {
         long[][] solverWeights = new long[][]{problem.getWeights()};
         long[] solverCapacity = new long[]{problem.getCapacity()};
 
-        KnapsackSolver solver = new KnapsackSolver(KnapsackSolver.SolverType.KNAPSACK_MULTIDIMENSION_BRANCH_AND_BOUND_SOLVER, "test");
+        KnapsackSolver solver = new KnapsackSolver(KnapsackSolver.SolverType.KNAPSACK_DYNAMIC_PROGRAMMING_SOLVER, "test");
         solver.init(problem.getValues(), solverWeights, solverCapacity);
 
         Stopwatch stopwatch = Stopwatch.createUnstarted();
         solver.solve();
         long time = stopwatch.elapsed(TimeUnit.MILLISECONDS);
 
-        int[] packedItems = Arrays.stream(solverWeights[0])
-                .mapToInt(w -> (int) w)
+        int[] packedItems = IntStream.range(0, solverWeights[0].length)
                 .filter(solver::bestSolutionContains)
                 .toArray();
-
-        long[] packedWeights =
-                Arrays.stream(packedItems).mapToLong(item -> solverWeights[0][item]).toArray();
 
         Solution result = new Solution();
         result.setItems(packedItems);
