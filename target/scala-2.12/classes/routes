@@ -1,0 +1,11 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+POST /knapsack/tasks               controllers.knapsack.TaskController.createTask(request: Request)
+
+GET /knapsack/tasks/:id            controllers.knapsack.TaskController.getTasks(id: Long)
+
+GET /knapsack/solutions/:id        controllers.knapsack.SolutionController.getSolution(id: Long)
+
+GET /knapsack/admin/tasks          controllers.knapsack.AdminController.getAllTasks

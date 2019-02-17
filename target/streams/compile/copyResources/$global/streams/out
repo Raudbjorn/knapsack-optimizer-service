@@ -1,0 +1,4 @@
+[debug] Copy resource mappings: 
+[debug] 	(C:\code\knapsack-optimizer-service\conf\application.conf,C:\code\knapsack-optimizer-service\target\scala-2.12\classes\application.conf)
+[debug] 	(C:\code\knapsack-optimizer-service\conf\logback.xml,C:\code\knapsack-optimizer-service\target\scala-2.12\classes\logback.xml)
+[debug] 	(C:\code\knapsack-optimizer-service\conf\routes,C:\code\knapsack-optimizer-service\target\scala-2.12\classes\routes)
