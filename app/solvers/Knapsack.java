@@ -6,6 +6,7 @@ import io.vavr.control.Either;
 import models.knapsack.Problem;
 import models.knapsack.ServiceError;
 import models.knapsack.Solution;
+import play.libs.NativeLoader;
 
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
@@ -16,7 +17,7 @@ import static models.knapsack.ServiceError.WEIGHT_OUT_OF_BOUNDS_ERROR;
 public class Knapsack {
 
     static {
-        System.loadLibrary("jniortools");
+        NativeLoader.load("jniortools");
     }
 
     public static Either<ServiceError, Solution> solve(Problem problem) {

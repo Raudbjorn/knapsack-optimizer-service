@@ -15,4 +15,6 @@ libraryDependencies += "com.google.guava" % "guava" % "19.0"
 libraryDependencies += "com.typesafe.play" %% "play-native-loader" % "1.0.0"
 
 
+javaOptions += "-Djava.library.path=lib"
+
 
