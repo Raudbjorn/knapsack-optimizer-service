@@ -3,7 +3,7 @@ package models.knapsack;
 import lombok.Data;
 
 @Data
-public class Problem implements ServiceModel {
+public class Problem {
 
     private long capacity;
 

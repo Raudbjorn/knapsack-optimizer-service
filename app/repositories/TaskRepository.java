@@ -5,6 +5,7 @@ import models.knapsack.Task;
 import play.db.ConnectionCallable;
 import play.db.Database;
 import repositories.db.DatabaseExecutionContext;
+import repositories.db.Util;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -38,12 +39,9 @@ public class TaskRepository {
         this.executionContext = context;
     }
 
-    private <T> CompletionStage<T> eventually(ConnectionCallable<T> block){
-        return CompletableFuture.supplyAsync(() -> db.withConnection(true, block), executionContext);
-    }
 
     public CompletionStage<Integer> saveTask(Task task){
-        return eventually(connection -> {
+        return Util.<Integer>wrapCall(db, executionContext).call(connection -> {
             PreparedStatement preparedStatement = connection.prepareStatement(INSERT,  Statement.RETURN_GENERATED_KEYS);
 
             preparedStatement.setString(1, task.getStatus().name());
@@ -58,16 +56,16 @@ public class TaskRepository {
     }
 
     public CompletionStage<Integer> uppdateTaskStatus(long id, Task.TaskStatus status){
-        return eventually(connection -> {
+        return Util.<Integer>wrapCall(db, executionContext).call((connection -> {
             PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_STATUS);
             preparedStatement.setString(1, status.name());
             preparedStatement.setInt(2, (int) id);
             return preparedStatement.executeUpdate();
-        });
+        }));
     }
 
     public CompletionStage<Optional<Task>> getTask(long id){
-        return eventually(connection -> {
+        return Util.<Optional<Task>>wrapCall(db, executionContext).call((connection -> {
             PreparedStatement preparedStatement = connection.prepareStatement(GET_TASK);
             preparedStatement.setLong(1, id);
             ResultSet resultSet = preparedStatement.executeQuery();
@@ -87,7 +85,7 @@ public class TaskRepository {
             }
 
              return Optional.empty();
-        });
+        }));
     }
 
 }

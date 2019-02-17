@@ -3,7 +3,7 @@ package models.knapsack;
 import lombok.Data;
 
 @Data
-public class Solution implements ServiceModel{
+public class Solution {
 
     private int[] items;
 

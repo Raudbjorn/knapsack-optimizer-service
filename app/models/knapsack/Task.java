@@ -13,7 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Value
 @Wither
 @Builder
-public class Task implements ServiceModel {
+public class Task {
 
     //public static final Map<Long, CompletableFuture<Either<ServiceError, Solution>>> ACTIVE_TASKS = new ConcurrentHashMap<>();
 
@@ -51,5 +51,8 @@ public class Task implements ServiceModel {
                 .build();
     }
 
+    public void start(Problem problem){
+
+    }
 
 }

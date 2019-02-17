@@ -6,6 +6,7 @@ import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
+import repositories.ProblemRepository;
 import repositories.TaskRepository;
 import requests.ProblemRequest;
 import solvers.Knapsack;
@@ -25,10 +26,12 @@ import static io.vavr.Patterns.$Right;
 public class TaskController extends Controller {
 
     private final TaskRepository taskRepository;
+    private final ProblemRepository problemRepository;
 
     @Inject
-    public TaskController(TaskRepository taskRepository) {
+    public TaskController(TaskRepository taskRepository, ProblemRepository problemRepository) {
         this.taskRepository = taskRepository;
+        this.problemRepository = problemRepository;
     }
 
     @BodyParser.Of(BodyParser.Json.class)
@@ -44,16 +47,27 @@ public class TaskController extends Controller {
         */
         Task task = Task.createSubmitted();
 
-        return taskRepository.saveTask(Task.createSubmitted())
+        CompletionStage<Task> eventualTask = taskRepository
+                .saveTask(task)
                 .thenApply(String::valueOf)
-                .thenApply(task::withTask)
+                .thenApply(task::withTask);
+
+        eventualTask.thenAccept(t -> problemRepository
+                .saveProblem(problemRequest.getProblem(), t.getTask())
+                .thenRun(() -> t.start(problemRequest.getProblem()))
+        );
+
+
+        return eventualTask
                 .thenApply(Json::toJson)
                 .thenApply(json -> status(ACCEPTED, json));
     }
 
     public CompletionStage<Result> getTask(long id) {
-        return taskRepository.getTask(id).thenApply(maybeTask ->
-                maybeTask.map(Json::toJson).map(json -> status(OK, json)).orElse(status(NOT_FOUND))
+        return taskRepository.getTask(id).thenApply(maybeTask -> maybeTask
+                        .map(Json::toJson)
+                        .map(json -> status(OK, json))
+                        .orElse(status(NOT_FOUND))
         );
     }
 
