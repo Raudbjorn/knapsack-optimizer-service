@@ -53,7 +53,7 @@ public class TaskController extends Controller {
                 .thenApply(task::withTask);
 
         eventualTask.thenAccept(t -> problemRepository
-                .saveProblem(problemRequest.getProblem(), t.getTask())
+                .saveProblem(problemRequest.getProblem(), t)
                 .thenRun(() -> t.start(problemRequest.getProblem()))
         );
 

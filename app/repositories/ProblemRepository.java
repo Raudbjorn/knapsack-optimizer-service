@@ -2,6 +2,7 @@ package repositories;
 
 
 import models.knapsack.Problem;
+import models.knapsack.Task;
 import play.db.Database;
 import play.libs.Json;
 import repositories.db.DatabaseCaller;
@@ -10,6 +11,7 @@ import repositories.db.Util;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.transaction.Transaction;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.util.concurrent.CompletionStage;
@@ -32,13 +34,16 @@ public class ProblemRepository {
         this.executionContext = context;
     }
 
-    public CompletionStage<Integer> saveProblem(Problem problem, String task){
+    public CompletionStage<Integer> saveProblem(Problem problem, Task task){
         return Util.<Integer> wrapCall(db, executionContext).call(connection -> {
-            PreparedStatement preparedStatement = connection.prepareStatement(INSERT, Statement.RETURN_GENERATED_KEYS);
-            preparedStatement.setString(1, task);
-            preparedStatement.setString(2, Json.toJson(problem).asText());
-            preparedStatement.executeUpdate();
-            return preparedStatement.getGeneratedKeys().getInt(1);
+
+
+            PreparedStatement problemStatement = connection.prepareStatement(INSERT, Statement.RETURN_GENERATED_KEYS);
+            problemStatement.setInt(1, Integer.parseInt(task.getTask()));
+            problemStatement.setString(2, Json.toJson(problem).asText());
+            problemStatement.executeUpdate();
+
+            return problemStatement.getGeneratedKeys().getInt(1);
         });
     }
 
