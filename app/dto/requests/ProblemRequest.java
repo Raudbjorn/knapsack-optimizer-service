@@ -1,4 +1,4 @@
-package requests;
+package dto.requests;
 
 import lombok.Data;
 import models.knapsack.Problem;

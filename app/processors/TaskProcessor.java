@@ -2,6 +2,7 @@ package processors;
 
 import contexts.TaskExecutionContext;
 import models.knapsack.Problem;
+import models.knapsack.Solution;
 import models.knapsack.Task;
 import repositories.ProblemRepository;
 import repositories.SolutionRepository;
@@ -11,6 +12,7 @@ import solvers.ServiceKnapsackSolver;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -53,9 +55,16 @@ public class TaskProcessor {
         return eventualResult;
     }
 
+    public CompletionStage<Optional<Solution>> getSolution(int taskId){
+        return db.call(SolutionRepository.getSolutionByTaskId(taskId));
+    }
 
     public CompletionStage<Optional<Task>> getTask(long id) {
         return db.call(TaskRepository.getTask(id));
+    }
+
+    public CompletionStage<List<Task>> getAllTasks(){
+        return db.call(TaskRepository.getAll());
     }
 
     private void startTask(Task task) {

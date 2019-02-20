@@ -1,13 +1,15 @@
 package controllers.knapsack;
 
 import dto.responses.TaskResponse;
+import io.vavr.control.Try;
 import play.libs.Json;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
+import play.mvc.Results;
 import processors.TaskProcessor;
-import requests.ProblemRequest;
+import dto.requests.ProblemRequest;
 
 import javax.inject.Inject;
 import java.util.Optional;
@@ -34,17 +36,19 @@ public class TaskController extends Controller {
                 .thenApply(json -> status(ACCEPTED, json));
     }
 
-    public CompletionStage<Result> getTask(long id) {
+    public CompletionStage<Result> getTask(String id) {
+        long  parsedId = Try.of(() -> Long.parseLong(id)).getOrElse(-1L);
+
         CompletionStage<Optional<Result>> maybeResult =
                 taskProcessor
-                .getTask(id)
+                .getTask(parsedId)
                 .thenApply(maybeTask ->
                         maybeTask
                         .map(TaskResponse::fromTask)
                         .map(Json::toJson)
-                        .map(json -> status(OK, json))
+                        .map(Results::ok)
                 );
-        return maybeResult.thenApply(maybeResponse -> maybeResponse.orElse(status(NOT_FOUND)));
+        return maybeResult.thenApply(maybeResponse -> maybeResponse.orElse(notFound()));
     }
 
 }

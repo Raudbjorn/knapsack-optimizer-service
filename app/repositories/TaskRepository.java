@@ -8,6 +8,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 
@@ -21,6 +23,8 @@ public class TaskRepository {
 
     private static final String GET_TASK =
             "SELECT * FROM TASK WHERE ID = ?";
+
+    private static final String GET_ALL = "SELECT * FROM TASK";
 
     public static ConnectionCallable<Integer> saveTask(Task task){
         return connection -> {
@@ -58,12 +62,24 @@ public class TaskRepository {
         };
     }
 
+    public static ConnectionCallable<List<Task>> getAll(){
+        return connection -> {
+            List<Task> result = new ArrayList<>();
+            PreparedStatement preparedStatement = connection.prepareStatement(GET_ALL);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            while(resultSet.next()){
+                result.add(fromResultSet(resultSet));
+            }
+            return result;
+        };
+    }
+
     private static Task fromResultSet(ResultSet resultSet) throws SQLException {
         return Task.builder()
                 .id(resultSet.getInt("ID"))
                 .submitted(resultSet.getLong("SUBMITTED"))
-                .started((Long) resultSet.getObject("STARTED"))
-                .completed((Long) resultSet.getObject("COMPLETED"))
+                .started(resultSet.getLong("STARTED"))
+                .completed(resultSet.getLong("COMPLETED"))
                 .status(Task.TaskStatus.valueOf(resultSet.getString("STATUS")))
                 .build();
     }

@@ -4,8 +4,10 @@
 
 POST /knapsack/tasks               controllers.knapsack.TaskController.createTask(request: Request)
 
-GET /knapsack/tasks/:id            controllers.knapsack.TaskController.getTask(id: Long)
+GET /knapsack/tasks/:id            controllers.knapsack.TaskController.getTask(id: String)
 
-GET /knapsack/solutions/:id        controllers.knapsack.SolutionController.getSolution(id: Long)
+GET /knapsack/solutions/:id        controllers.knapsack.SolutionController.getSolution(id: String)
 
 GET /knapsack/admin/tasks          controllers.knapsack.AdminController.getAllTasks
+
+GET /knapsack/admin/shutdown       controllers.knapsack.AdminController.shutdown
