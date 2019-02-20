@@ -1,28 +1,13 @@
 package repositories;
 
-import io.vavr.control.Try;
 import models.knapsack.Task;
 import play.db.ConnectionCallable;
-import play.db.Database;
-import repositories.db.DatabaseExecutionContext;
-import repositories.db.Util;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Statement;
-import java.sql.Types;
+import java.sql.*;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
 
 
-@Singleton
 public class TaskRepository {
-
-    private Database db;
-    private DatabaseExecutionContext executionContext;
 
     private static final String INSERT =
             "INSERT INTO TASK(STATUS, SUBMITTED, STARTED, COMPLETED) VALUES(?, ?, ?, ?)";
@@ -33,59 +18,52 @@ public class TaskRepository {
     private static final String GET_TASK =
             "SELECT * FROM TASK WHERE ID = ?";
 
-    @Inject
-    public TaskRepository(Database db, DatabaseExecutionContext context) {
-        this.db = db;
-        this.executionContext = context;
-    }
-
-
-    public CompletionStage<Integer> saveTask(Task task){
-        return Util.<Integer>wrapCall(db, executionContext).call(connection -> {
+    public static ConnectionCallable<Integer> saveTask(Task task){
+        return connection -> {
             PreparedStatement preparedStatement = connection.prepareStatement(INSERT,  Statement.RETURN_GENERATED_KEYS);
 
             preparedStatement.setString(1, task.getStatus().name());
-            preparedStatement.setLong(2, task.getTimeStamps().getSubmitted());
+            preparedStatement.setLong(2, task.getSubmitted());
             preparedStatement.setNull(3, Types.INTEGER);
             preparedStatement.setNull(4, Types.INTEGER);
 
             preparedStatement.execute();
 
             return preparedStatement.getGeneratedKeys().getInt(1);
-        });
+        };
     }
 
-    public CompletionStage<Integer> uppdateTaskStatus(long id, Task.TaskStatus status){
-        return Util.<Integer>wrapCall(db, executionContext).call((connection -> {
+    public static ConnectionCallable<Integer> updateTaskStatus(long id, Task.TaskStatus status){
+        return connection -> {
             PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_STATUS);
             preparedStatement.setString(1, status.name());
             preparedStatement.setInt(2, (int) id);
             return preparedStatement.executeUpdate();
-        }));
+        };
     }
 
-    public CompletionStage<Optional<Task>> getTask(long id){
-        return Util.<Optional<Task>>wrapCall(db, executionContext).call((connection -> {
+    public static ConnectionCallable<Optional<Task>> getTask(long id){
+        return connection -> {
             PreparedStatement preparedStatement = connection.prepareStatement(GET_TASK);
             preparedStatement.setLong(1, id);
             ResultSet resultSet = preparedStatement.executeQuery();
 
             if(resultSet.next()){
-                Task.TimeStamps timeStamps = Task.TimeStamps.builder()
-                        .submitted(resultSet.getLong("SUBMITTED"))
-                        .started((Long) resultSet.getObject("STARTED"))
-                        .completed((Long) resultSet.getObject("COMPLETED"))
-                        .build();
-
-                return Optional.of(Task.builder()
-                        .task(String.valueOf(resultSet.getInt("ID")))
-                        .timeStamps(timeStamps)
-                        .status(Task.TaskStatus.valueOf(resultSet.getString("STATUS")))
-                        .build());
+                return Optional.of(fromResultSet(resultSet));
             }
 
              return Optional.empty();
-        }));
+        };
+    }
+
+    private static Task fromResultSet(ResultSet resultSet) throws SQLException {
+        return Task.builder()
+                .id(resultSet.getInt("ID"))
+                .submitted(resultSet.getLong("SUBMITTED"))
+                .started((Long) resultSet.getObject("STARTED"))
+                .completed((Long) resultSet.getObject("COMPLETED"))
+                .status(Task.TaskStatus.valueOf(resultSet.getString("STATUS")))
+                .build();
     }
 
 }

@@ -15,44 +15,28 @@ import java.util.concurrent.ConcurrentHashMap;
 @Builder
 public class Task {
 
-    //public static final Map<Long, CompletableFuture<Either<ServiceError, Solution>>> ACTIVE_TASKS = new ConcurrentHashMap<>();
 
     public enum TaskStatus {
         SUBMITTED, STARTED, COMPLETED
     }
 
-    private String task;
+    private Integer id;
 
     private TaskStatus status;
 
-    private TimeStamps timeStamps;
+    long submitted;
 
-    @Value
-    @Wither
-    @Builder
-    public static class TimeStamps {
-        long submitted;
+    Long started;
 
-        Long started;
+    Long completed;
 
-        Long completed;
-    }
-
-    public static Task createSubmitted(){
+    public static Task createSubmitted() {
         return Task.builder()
                 .status(Task.TaskStatus.SUBMITTED)
-                .timeStamps(TimeStamps
-                        .builder()
-                        .submitted(LocalDateTime.now().atZone(ZoneId.systemDefault()).toEpochSecond())
-                        .started(null)
-                        .completed(null)
-                        .build()
-                )
+                .submitted(LocalDateTime.now().atZone(ZoneId.systemDefault()).toEpochSecond())
+                .started(null)
+                .completed(null)
                 .build();
-    }
-
-    public void start(Problem problem){
-
     }
 
 }

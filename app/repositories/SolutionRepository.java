@@ -1,22 +1,25 @@
 package repositories;
 
-import play.db.Database;
-import repositories.db.DatabaseExecutionContext;
+import models.knapsack.Solution;
+import play.db.ConnectionCallable;
+import play.libs.Json;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import java.sql.PreparedStatement;
+import java.sql.Statement;
 
-
-
-@Singleton
 public class SolutionRepository {
 
-    private Database db;
-    private DatabaseExecutionContext executionContext;
+    private static final String INSERT =
+            "INSERT INTO SOLUTION(JSON, PROBLEM_ID, TASK_ID) VALUES (?, ?, ?)";
 
-    @Inject
-    public SolutionRepository(Database db, DatabaseExecutionContext context) {
-        this.db = db;
-        this.executionContext = context;
+    public static ConnectionCallable<Integer> insertSolution(Solution solution, int problemId, int taskId){
+        return connection -> {
+            PreparedStatement preparedStatement = connection.prepareStatement(INSERT, Statement.RETURN_GENERATED_KEYS);
+            preparedStatement.setString(1, Json.toJson(solution).toString());
+            preparedStatement.setInt(2, problemId);
+            preparedStatement.setInt(3, taskId);
+            preparedStatement.executeUpdate();
+            return preparedStatement.getGeneratedKeys().getInt(1);
+        };
     }
 }

@@ -1,20 +1,22 @@
 package controllers.knapsack;
 
+import dto.responses.TaskResponse;
 import models.knapsack.Task;
 import play.libs.Json;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
+import processors.TaskProcessor;
 import repositories.ProblemRepository;
 import repositories.TaskRepository;
 import requests.ProblemRequest;
-import solvers.Knapsack;
 
 import javax.inject.Inject;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 
 import static io.vavr.API.$;
@@ -25,13 +27,12 @@ import static io.vavr.Patterns.$Right;
 
 public class TaskController extends Controller {
 
-    private final TaskRepository taskRepository;
-    private final ProblemRepository problemRepository;
+
+    private final TaskProcessor taskProcessor;
 
     @Inject
-    public TaskController(TaskRepository taskRepository, ProblemRepository problemRepository) {
-        this.taskRepository = taskRepository;
-        this.problemRepository = problemRepository;
+    public TaskController(TaskProcessor taskProcessor) {
+        this.taskProcessor = taskProcessor;
     }
 
     @BodyParser.Of(BodyParser.Json.class)
@@ -45,30 +46,25 @@ public class TaskController extends Controller {
                 Case($Left($()), error -> status(error.status, error.errorMsg))
         );
         */
-        Task task = Task.createSubmitted();
 
-        CompletionStage<Task> eventualTask = taskRepository
-                .saveTask(task)
-                .thenApply(String::valueOf)
-                .thenApply(task::withTask);
-
-        eventualTask.thenAccept(t -> problemRepository
-                .saveProblem(problemRequest.getProblem(), t)
-                .thenRun(() -> t.start(problemRequest.getProblem()))
-        );
-
-
-        return eventualTask
+        return taskProcessor
+                .submitProblem(problemRequest.getProblem())
+                .thenApply(TaskResponse::fromTask)
                 .thenApply(Json::toJson)
                 .thenApply(json -> status(ACCEPTED, json));
     }
 
     public CompletionStage<Result> getTask(long id) {
-        return taskRepository.getTask(id).thenApply(maybeTask -> maybeTask
+        CompletionStage<Optional<Result>> maybeResult =
+                taskProcessor
+                .getTask(id)
+                .thenApply(maybeTask ->
+                        maybeTask
+                        .map(TaskResponse::fromTask)
                         .map(Json::toJson)
                         .map(json -> status(OK, json))
-                        .orElse(status(NOT_FOUND))
-        );
+                );
+        return maybeResult.thenApply(maybeResponse -> maybeResponse.orElse(status(NOT_FOUND)));
     }
 
 }
