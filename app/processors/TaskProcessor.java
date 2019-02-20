@@ -2,7 +2,6 @@ package processors;
 
 import contexts.TaskExecutionContext;
 import models.knapsack.Problem;
-import models.knapsack.Solution;
 import models.knapsack.Task;
 import repositories.ProblemRepository;
 import repositories.SolutionRepository;
@@ -34,30 +33,28 @@ public class TaskProcessor {
     }
 
 
-    public CompletionStage<Task> submitProblem(Problem problem){
+    public CompletionStage<Task> submitProblem(Problem problem) {
         Task task = Task.createSubmitted();
 
-        CompletionStage<Integer> eventualTaskId =  db.call(connection -> {
+        CompletionStage<Task> eventualResult = db.call(connection -> {
             connection.setAutoCommit(false);
             Integer taskId = TaskRepository.saveTask(task).call(connection);
             ProblemRepository.saveProblem(problem, task.withId(taskId)).call(connection);
+            Task result = TaskRepository
+                    .getTask(taskId)
+                    .call(connection)
+                    .orElseThrow(() -> new RuntimeException(String.format("Could not retrieve persisted task with id %d", taskId)));
             connection.commit();
-            return taskId;
+            return result;
         });
 
-
-        CompletionStage<Task> eventualResult = eventualTaskId.thenApply(task::withId);
-
-        eventualResult.thenAccept(t -> {
-            System.out.println("t: " + t);
-            CompletableFuture.runAsync(() -> startTask(t), taskContext);
-        });
+        eventualResult.thenAcceptAsync(t -> CompletableFuture.runAsync(() -> startTask(t), taskContext));
 
         return eventualResult;
     }
 
 
-    public CompletionStage<Optional<Task>> getTask(long id){
+    public CompletionStage<Optional<Task>> getTask(long id) {
         return db.call(TaskRepository.getTask(id));
     }
 
@@ -68,21 +65,16 @@ public class TaskProcessor {
             Problem problem = ProblemRepository.getProblemByTaskId(task.getId()).call(connection);
             connection.commit();
             return problem;
-        });
+        }, taskContext);
 
-        eventualProblem.thenAccept(problem -> {
-            System.out.println("?2");
-            Solution solution = solver.solve(problem);
-            System.out.println(solution);
-             db.call(connection -> {
-                connection.setAutoCommit(false);
-                System.out.println(solution);
-                SolutionRepository.insertSolution(solution, problem.getId(), task.getId()).call(connection);
-                TaskRepository.updateTaskStatus(task.getId(), COMPLETED).call(connection);
-                connection.commit();
-                return 1;
-            });
-        });
+        eventualProblem
+                .thenApply(solver::solve)
+                .thenAcceptAsync(solution -> db.run(connection -> {
+                    connection.setAutoCommit(false);
+                    TaskRepository.updateTaskStatus(task.getId(), COMPLETED).call(connection);
+                    SolutionRepository.insertSolution(solution, task.getId()).call(connection);
+                    connection.commit();
+                }, taskContext));
     }
 
 }
