@@ -67,6 +67,12 @@ public class TaskProcessor {
         return db.call(TaskRepository.getAll());
     }
 
+    private Optional<Solution> checkIfSolutionExists(Problem problem){
+        //TODO: IMPLEMENT
+        return null;
+    }
+
+
     private void startTask(Task task) {
         CompletionStage<Problem> eventualProblem = db.call(connection -> {
             connection.setAutoCommit(false);
