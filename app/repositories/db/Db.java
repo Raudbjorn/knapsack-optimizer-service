@@ -1,6 +1,7 @@
 package repositories.db;
 
 import contexts.DatabaseExecutionContext;
+import play.Environment;
 import play.db.ConnectionCallable;
 import play.db.ConnectionRunnable;
 import play.db.Database;
@@ -8,8 +9,13 @@ import play.libs.concurrent.CustomExecutionContext;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.stream.Stream;
+
+import static util.Throwables.propagate;
 
 @Singleton
 public class Db {
@@ -18,9 +24,19 @@ public class Db {
     private final DatabaseExecutionContext executionContext;
 
     @Inject
-    public Db(Database db, DatabaseExecutionContext context) {
+    public Db(Database db, DatabaseExecutionContext context, Environment environment) {
         this.db = db;
         this.executionContext = context;
+
+            Stream.of("conf/database")
+                    .flatMap(propagate(dirName -> Files.walk(environment.getFile(dirName).toPath())))
+                    .filter(f -> f.getFileName().toString().toLowerCase().endsWith(".sql"))
+                    .map(propagate(Files::readAllBytes))
+                    .map(bytes -> new String(bytes, StandardCharsets.UTF_8))
+                    .forEach(sql -> db.withConnection(connection -> {
+                        System.out.println(sql);
+                        connection.prepareStatement(sql).executeUpdate();
+                    }));
     }
 
     public <T> CompletionStage<T> call(ConnectionCallable<T> call) {

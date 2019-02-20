@@ -1,5 +1,6 @@
 package controllers.knapsack;
 
+import dto.requests.ProblemRequest;
 import dto.responses.TaskResponse;
 import io.vavr.control.Try;
 import play.libs.Json;
@@ -9,7 +10,6 @@ import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.Results;
 import processors.TaskProcessor;
-import dto.requests.ProblemRequest;
 
 import javax.inject.Inject;
 import java.util.Optional;
