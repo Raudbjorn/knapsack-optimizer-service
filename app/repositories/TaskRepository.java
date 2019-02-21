@@ -1,15 +1,11 @@
 package repositories;
 
+import dto.data.ProblemData;
 import models.knapsack.Problem;
 import models.knapsack.Task;
 import play.db.ConnectionCallable;
-import play.libs.Json;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Types;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -81,24 +77,24 @@ public class TaskRepository {
         };
     }
 
-    public static ConnectionCallable<Optional<Task>> checkForSoluiton(Problem problem){
+    public static ConnectionCallable<Optional<Task>> checkForSoluiton(ProblemData problem){
         return connection -> {
             PreparedStatement preparedStatement = connection.prepareStatement(GET_TASK_BY_PROBLEM);
             preparedStatement.setString(1, problem.toJson());
             ResultSet resultSet = preparedStatement.executeQuery();
-
-            return resultSet.next()
-                    ? Optional.of(TaskRepository.fromResultSet(resultSet))
-                    : Optional.empty();
+            Optional<Task> result = !resultSet.next()
+                    ? Optional.empty()
+                    : Optional.of(TaskRepository.fromResultSet(resultSet));
+            return result;
         };
     }
 
     private static Task fromResultSet(ResultSet resultSet) throws SQLException {
         return Task.builder()
                 .id(resultSet.getInt("ID"))
-                .submitted(resultSet.getLong("SUBMITTED"))
-                .started(resultSet.getLong("STARTED"))
-                .completed(resultSet.getLong("COMPLETED"))
+                .submitted((Integer) resultSet.getObject("SUBMITTED"))
+                .started((Integer) resultSet.getObject("STARTED"))
+                .completed((Integer) resultSet.getObject("COMPLETED"))
                 .status(Task.TaskStatus.valueOf(resultSet.getString("STATUS")))
                 .build();
     }

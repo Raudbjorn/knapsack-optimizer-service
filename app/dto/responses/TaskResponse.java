@@ -23,11 +23,11 @@ public class TaskResponse {
     @Wither
     @Builder
     private static class TimeStamps {
-        long submitted;
+        Integer submitted;
 
-        Long started;
+        Integer started;
 
-        Long completed;
+        Integer completed;
     }
 
     public static TaskResponse fromTask(Task task) {
@@ -36,7 +36,6 @@ public class TaskResponse {
                 .started(task.getStarted())
                 .completed(task.getCompleted())
                 .build();
-
 
         return TaskResponse.builder()
                 .task(String.valueOf(task.getId()))

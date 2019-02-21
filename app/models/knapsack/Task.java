@@ -19,15 +19,15 @@ public class Task {
 
     private TaskStatus status;
 
-    Long submitted;
+    Integer submitted;
 
-    Long started;
+    Integer started;
 
-    Long completed;
+    Integer completed;
 
     public static Task createSubmitted() {
         return Task.builder()
-                .status(Task.TaskStatus.SUBMITTED)
+                .status(TaskStatus.SUBMITTED)
                 .build();
     }
 

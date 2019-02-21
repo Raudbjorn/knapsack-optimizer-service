@@ -1,17 +1,22 @@
 package models.knapsack;
 
-import lombok.Data;
-import play.libs.Json;
+import dto.data.SolutionData;
+import lombok.Builder;
+import lombok.Value;
+import lombok.experimental.Wither;
 
-@Data
+@Value
+@Builder
+@Wither
 public class Solution {
 
-    private int[] items;
+    private Integer id;
 
-    private long time;
+    private Integer problemId;
 
-    public static Solution fromJson(String json){
-        return Json.fromJson(Json.parse(json), Solution.class);
-    }
+    private Integer taskId;
 
+    SolutionData solutionData;
+
+    private Integer time;
 }

@@ -1,29 +1,18 @@
 package models.knapsack;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import dto.data.ProblemData;
+import lombok.Builder;
 import lombok.Data;
-import play.libs.Json;
+import lombok.experimental.Wither;
 
+@Builder
+@Wither
 @Data
 public class Problem {
 
-    @JsonIgnore
-    private Integer Id;
+    private Integer id;
 
-    private long capacity;
+    private Integer taskId;
 
-    private long[] weights;
-
-    private long[] values;
-
-    public static Problem fromJson(String json){
-        return Json.fromJson(Json.parse(json), Problem.class);
-    }
-
-
-    public String toJson(){
-        return Json.toJson(this).toString();
-    }
-
-
+    ProblemData problemData;
 }

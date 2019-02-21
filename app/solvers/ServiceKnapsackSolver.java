@@ -1,16 +1,14 @@
 package solvers;
 
-import com.google.common.base.Stopwatch;
+import dto.data.SolutionData;
 import models.knapsack.Problem;
 import models.knapsack.Solution;
-import play.libs.NativeLoader;
 
-import javax.inject.Singleton;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
-@Singleton
 public class ServiceKnapsackSolver {
+
+
 
 
 /*
@@ -41,25 +39,27 @@ public class ServiceKnapsackSolver {
     */
 
 
-    public Solution solve(Problem problem) {
-        long[][] solverWeights = new long[][]{problem.getWeights()};
-        long[] solverCapacity = new long[]{problem.getCapacity()};
+    public static Solution solve(Problem problem) {
+        long[][] solverWeights = new long[][]{problem.getProblemData().getWeights()};
+        long[] solverCapacity = new long[]{problem.getProblemData().getCapacity()};
 
-        com.google.ortools.algorithms.KnapsackSolver solver = new com.google.ortools.algorithms.KnapsackSolver(com.google.ortools.algorithms.KnapsackSolver.SolverType.KNAPSACK_DYNAMIC_PROGRAMMING_SOLVER, "test");
-        solver.init(problem.getValues(), solverWeights, solverCapacity);
-
-        Stopwatch stopwatch = Stopwatch.createUnstarted();
+        com.google.ortools.algorithms.KnapsackSolver solver =
+                new com.google.ortools.algorithms.KnapsackSolver(
+                        com.google.ortools.algorithms.KnapsackSolver.SolverType.KNAPSACK_DYNAMIC_PROGRAMMING_SOLVER,
+                        "test");
+        solver.init(problem.getProblemData().getValues(), solverWeights, solverCapacity);
         solver.solve();
-        long time = stopwatch.elapsed(TimeUnit.MILLISECONDS);
-
         int[] packedItems = IntStream.range(0, solverWeights[0].length)
                 .filter(solver::bestSolutionContains)
                 .toArray();
 
-        Solution result = new Solution();
-        result.setItems(packedItems);
-        result.setTime(time);
+        SolutionData data = new SolutionData();
+        data.setItems(packedItems);
 
-        return result;
+        return Solution.builder()
+                .solutionData(data)
+                .problemId(problem.getId())
+                .taskId(problem.getTaskId())
+                .build();
     }
 }

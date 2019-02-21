@@ -1,20 +1,16 @@
 package dto.responses;
 
-import lombok.Builder;
-import lombok.Value;
-import lombok.experimental.Wither;
-import models.knapsack.Problem;
-import models.knapsack.Solution;
+import dto.data.ProblemData;
+import dto.data.SolutionData;
+import lombok.Data;
 
-@Value
-@Wither
-@Builder
+@Data
 public class SolutionResponse {
 
     private String task;
 
-    private Problem problem;
+    private ProblemData problemData;
 
-    private Solution solution;
+    private SolutionData solutionData;
 
 }

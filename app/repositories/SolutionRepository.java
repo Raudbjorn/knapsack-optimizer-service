@@ -1,11 +1,13 @@
 package repositories;
 
+import dto.data.SolutionData;
 import models.knapsack.Solution;
 import play.db.ConnectionCallable;
 import play.libs.Json;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Optional;
 
@@ -15,7 +17,7 @@ public class SolutionRepository {
             "INSERT INTO SOLUTION(JSON, TASK_ID, PROBLEM_ID) VALUES (?, ?, (SELECT MAX(ID) FROM PROBLEM WHERE TASK_ID = ?))";
 
     private static final String GET_BY_TASK_ID =
-            "SELECT JSON FROM SOLUTION WHERE TASK_ID = ?";
+            "SELECT * FROM SOLUTION WHERE TASK_ID = ?";
 
     public static ConnectionCallable<Integer> insertSolution(Solution solution, int taskId){
         return connection -> {
@@ -33,12 +35,20 @@ public class SolutionRepository {
             PreparedStatement preparedStatement = connection.prepareStatement(GET_BY_TASK_ID);
             preparedStatement.setInt(1, taskId);
             ResultSet resultSet = preparedStatement.executeQuery();
-
-            if(resultSet.next()){
-                return Optional.of(Solution.fromJson(resultSet.getString("JSON")));
-            } else {
-                return Optional.empty();
-            }
+            return !resultSet.next() ? Optional.empty() : Optional.of(fromResultSet(resultSet));
         };
+    }
+
+
+    private static Solution fromResultSet(ResultSet resultSet) throws SQLException {
+        SolutionData solutionData = SolutionData.fromJson(resultSet.getString("JSON"));
+
+        return Solution.builder()
+                .solutionData(solutionData)
+                .id(resultSet.getInt("ID"))
+                .time((Integer) resultSet.getObject("TIME"))
+                .problemId((Integer) resultSet.getObject("PROBLEM_ID"))
+                .taskId((Integer) resultSet.getObject("TASK_ID"))
+                .build();
     }
 }

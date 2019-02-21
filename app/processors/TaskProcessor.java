@@ -1,9 +1,12 @@
 package processors;
 
 import contexts.TaskExecutionContext;
+import dto.data.ProblemData;
 import models.knapsack.Problem;
 import models.knapsack.Solution;
 import models.knapsack.Task;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import repositories.ProblemRepository;
 import repositories.SolutionRepository;
 import repositories.TaskRepository;
@@ -16,7 +19,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.function.Supplier;
 
 import static models.knapsack.Task.TaskStatus.COMPLETED;
 import static models.knapsack.Task.TaskStatus.STARTED;
@@ -26,32 +28,31 @@ public class TaskProcessor {
 
     private final Db db;
     private final TaskExecutionContext taskContext;
-    private final ServiceKnapsackSolver solver;
+
+    private final Logger logger = LoggerFactory.getLogger("play");
 
     @Inject
-    public TaskProcessor(Db db, TaskExecutionContext context, ServiceKnapsackSolver solver) {
+    public TaskProcessor(Db db, TaskExecutionContext context) {
         this.db = db;
         this.taskContext = context;
-        this.solver = solver;
     }
 
 
-    public CompletionStage<Task> submitProblem(Problem problem) {
-
+    public CompletionStage<Task> submitProblem(ProblemData problem) {
         CompletionStage<Optional<Task>> maybeSolution = checkIfSolutionExists(problem);
-
-        Supplier<CompletableFuture<Task>> createAndStart = () -> {
-            CompletableFuture<Task> result = createSubmittedTask(problem).toCompletableFuture();
-            result.thenAcceptAsync(t -> CompletableFuture.runAsync(() -> startTask(t), taskContext));
-            return result;
-        };
-
         return maybeSolution.thenCompose(maybeSolvedTask ->
-                maybeSolvedTask.map(CompletableFuture::completedFuture).orElseGet(createAndStart));
+                maybeSolvedTask.map(CompletableFuture::completedFuture).orElseGet(() -> {
+                    return createAndStart(problem).toCompletableFuture();
+                })
+        );
     }
 
     public CompletionStage<Optional<Solution>> getSolution(int taskId) {
         return db.call(SolutionRepository.getSolutionByTaskId(taskId));
+    }
+
+    public CompletionStage<Problem> getProblemByTaskId(int taskId){
+        return db.call(ProblemRepository.getProblemByTaskId(taskId));
     }
 
     public CompletionStage<Optional<Task>> getTask(long id) {
@@ -62,11 +63,11 @@ public class TaskProcessor {
         return db.call(TaskRepository.getAll());
     }
 
-    private CompletionStage<Optional<Task>> checkIfSolutionExists(Problem problem) {
+    private CompletionStage<Optional<Task>> checkIfSolutionExists(ProblemData problem) {
         return db.call(TaskRepository.checkForSoluiton(problem));
     }
 
-    private CompletionStage<Task> createSubmittedTask(Problem problem) {
+    private CompletionStage<Task> createSubmittedTask(ProblemData problem) {
         return db.call(connection -> {
             Task task = Task.createSubmitted();
             connection.setAutoCommit(false);
@@ -82,23 +83,37 @@ public class TaskProcessor {
     }
 
 
-    private void startTask(Task task) {
-        CompletionStage<Problem> eventualProblem = db.call(connection -> {
+    private CompletionStage<Task> createAndStart(ProblemData problem) {
+        CompletionStage<Task> taskSubmitted = createSubmittedTask(problem);
+
+        taskSubmitted.thenAcceptAsync(submittedTask -> {
+            startTask(submittedTask).thenApply(ServiceKnapsackSolver::solve).thenApply(this::completeTask);
+        });
+
+        return taskSubmitted;
+    }
+
+    private CompletionStage<Problem> startTask(Task task) {
+        return db.call(connection -> {
             connection.setAutoCommit(false);
             TaskRepository.updateTaskStatus(task.getId(), STARTED).call(connection);
             Problem problem = ProblemRepository.getProblemByTaskId(task.getId()).call(connection);
             connection.commit();
-            return problem;
+            return problem.withTaskId(task.getId());
         }, taskContext);
+    }
 
-        eventualProblem
-                .thenApply(solver::solve)
-                .thenAcceptAsync(solution -> db.run(connection -> {
-                    connection.setAutoCommit(false);
-                    TaskRepository.updateTaskStatus(task.getId(), COMPLETED).call(connection);
-                    SolutionRepository.insertSolution(solution, task.getId()).call(connection);
-                    connection.commit();
-                }, taskContext));
+    private CompletionStage<Boolean> completeTask(Solution solution) {
+        logger.info("3");
+        return db.call(connection -> {
+            logger.info("???1");
+            connection.setAutoCommit(false);
+            TaskRepository.updateTaskStatus(solution.getTaskId(), COMPLETED).call(connection);
+            SolutionRepository.insertSolution(solution, solution.getTaskId()).call(connection);
+            connection.commit();
+            logger.info("???2");
+            return true;
+        }, taskContext);
     }
 
 }
