@@ -1,14 +1,9 @@
 package models.knapsack;
 
-import io.vavr.control.Either;
-import lombok.*;
+import lombok.Builder;
+import lombok.Value;
 import lombok.experimental.Wither;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Value
 @Wither
@@ -24,7 +19,7 @@ public class Task {
 
     private TaskStatus status;
 
-    long submitted;
+    Long submitted;
 
     Long started;
 
@@ -33,9 +28,6 @@ public class Task {
     public static Task createSubmitted() {
         return Task.builder()
                 .status(Task.TaskStatus.SUBMITTED)
-                .submitted(LocalDateTime.now().atZone(ZoneId.systemDefault()).toEpochSecond())
-                .started(null)
-                .completed(null)
                 .build();
     }
 

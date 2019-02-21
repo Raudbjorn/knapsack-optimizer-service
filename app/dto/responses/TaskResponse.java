@@ -5,6 +5,9 @@ import lombok.Value;
 import lombok.experimental.Wither;
 import models.knapsack.Task;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Value
 @Wither
 @Builder
@@ -42,5 +45,8 @@ public class TaskResponse {
                 .build();
     }
 
+    public static List<TaskResponse> fromTasks(List<Task> tasks) {
+        return tasks.stream().map(TaskResponse::fromTask).collect(Collectors.toList());
+    }
 
 }

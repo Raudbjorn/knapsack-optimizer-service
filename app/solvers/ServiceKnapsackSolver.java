@@ -1,20 +1,13 @@
 package solvers;
 
 import com.google.common.base.Stopwatch;
-import com.google.ortools.algorithms.KnapsackSolver;
-import io.vavr.control.Either;
 import models.knapsack.Problem;
-import models.knapsack.ServiceError;
 import models.knapsack.Solution;
 import play.libs.NativeLoader;
 
 import javax.inject.Singleton;
-import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
-
-
-import static models.knapsack.ServiceError.WEIGHT_OUT_OF_BOUNDS_ERROR;
 
 @Singleton
 public class ServiceKnapsackSolver {
