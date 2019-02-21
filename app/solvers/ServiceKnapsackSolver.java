@@ -12,9 +12,7 @@ import java.util.stream.IntStream;
 @Singleton
 public class ServiceKnapsackSolver {
 
-    static {
-        NativeLoader.load("jniortools");
-    }
+
 /*
     public static Either<ServiceError, Solution> solve(Problem problem) {
         if (Arrays.stream(problem.getWeights()).anyMatch(w -> w > Integer.MAX_VALUE || w <= 0))

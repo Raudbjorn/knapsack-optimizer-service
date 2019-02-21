@@ -1,7 +1,9 @@
 package repositories;
 
+import models.knapsack.Problem;
 import models.knapsack.Task;
 import play.db.ConnectionCallable;
+import play.libs.Json;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -25,6 +27,13 @@ public class TaskRepository {
             "SELECT * FROM TASK WHERE ID = ?";
 
     private static final String GET_ALL = "SELECT * FROM TASK";
+
+    private static final String GET_TASK_BY_PROBLEM =
+            "SELECT TASK.* FROM TASK\n" +
+            "JOIN SOLUTION S on TASK.ID = S.TASK_ID\n" +
+            "JOIN PROBLEM P on S.PROBLEM_ID = P.ID\n" +
+            "WHERE P.JSON = ?";
+
 
     public static ConnectionCallable<Integer> saveTask(Task task){
         return connection -> {
@@ -54,11 +63,9 @@ public class TaskRepository {
             preparedStatement.setLong(1, id);
             ResultSet resultSet = preparedStatement.executeQuery();
 
-            if(resultSet.next()){
-                return Optional.of(fromResultSet(resultSet));
-            }
-
-             return Optional.empty();
+            return resultSet.next()
+                    ? Optional.of(fromResultSet(resultSet))
+                    : Optional.empty();
         };
     }
 
@@ -71,6 +78,18 @@ public class TaskRepository {
                 result.add(fromResultSet(resultSet));
             }
             return result;
+        };
+    }
+
+    public static ConnectionCallable<Optional<Task>> checkForSoluiton(Problem problem){
+        return connection -> {
+            PreparedStatement preparedStatement = connection.prepareStatement(GET_TASK_BY_PROBLEM);
+            preparedStatement.setString(1, problem.toJson());
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            return resultSet.next()
+                    ? Optional.of(TaskRepository.fromResultSet(resultSet))
+                    : Optional.empty();
         };
     }
 

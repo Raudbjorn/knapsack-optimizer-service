@@ -28,13 +28,18 @@ public class Db {
         this.db = db;
         this.executionContext = context;
 
-            Stream.of("conf/database")
+            Stream.of(
+                    "TASK.sql",
+                    "PROBLEM.sql",
+                    "SOLUTION.sql",
+                    "UPDATE_SOLUTION_TIME.sql",
+                    "UPDATE_STATUS_TIME.sql"
+                    ).map(fName -> "/conf/database/" + fName)
                     .flatMap(propagate(dirName -> Files.walk(environment.getFile(dirName).toPath())))
                     .filter(f -> f.getFileName().toString().toLowerCase().endsWith(".sql"))
                     .map(propagate(Files::readAllBytes))
                     .map(bytes -> new String(bytes, StandardCharsets.UTF_8))
                     .forEach(sql -> db.withConnection(connection -> {
-                        System.out.println(sql);
                         connection.prepareStatement(sql).executeUpdate();
                     }));
     }

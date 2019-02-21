@@ -35,8 +35,7 @@ public class SolutionRepository {
             ResultSet resultSet = preparedStatement.executeQuery();
 
             if(resultSet.next()){
-                String  json = resultSet.getString("JSON");
-                return Optional.of(Json.fromJson(Json.parse(json), Solution.class));
+                return Optional.of(Solution.fromJson(resultSet.getString("JSON")));
             } else {
                 return Optional.empty();
             }

@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.function.Supplier;
 
 import static models.knapsack.Task.TaskStatus.COMPLETED;
 import static models.knapsack.Task.TaskStatus.STARTED;
@@ -36,9 +37,38 @@ public class TaskProcessor {
 
 
     public CompletionStage<Task> submitProblem(Problem problem) {
-        Task task = Task.createSubmitted();
 
-        CompletionStage<Task> eventualResult = db.call(connection -> {
+        CompletionStage<Optional<Task>> maybeSolution = checkIfSolutionExists(problem);
+
+        Supplier<CompletableFuture<Task>> createAndStart = () -> {
+            CompletableFuture<Task> result = createSubmittedTask(problem).toCompletableFuture();
+            result.thenAcceptAsync(t -> CompletableFuture.runAsync(() -> startTask(t), taskContext));
+            return result;
+        };
+
+        return maybeSolution.thenCompose(maybeSolvedTask ->
+                maybeSolvedTask.map(CompletableFuture::completedFuture).orElseGet(createAndStart));
+    }
+
+    public CompletionStage<Optional<Solution>> getSolution(int taskId) {
+        return db.call(SolutionRepository.getSolutionByTaskId(taskId));
+    }
+
+    public CompletionStage<Optional<Task>> getTask(long id) {
+        return db.call(TaskRepository.getTask(id));
+    }
+
+    public CompletionStage<List<Task>> getAllTasks() {
+        return db.call(TaskRepository.getAll());
+    }
+
+    private CompletionStage<Optional<Task>> checkIfSolutionExists(Problem problem) {
+        return db.call(TaskRepository.checkForSoluiton(problem));
+    }
+
+    private CompletionStage<Task> createSubmittedTask(Problem problem) {
+        return db.call(connection -> {
+            Task task = Task.createSubmitted();
             connection.setAutoCommit(false);
             Integer taskId = TaskRepository.saveTask(task).call(connection);
             ProblemRepository.saveProblem(problem, task.withId(taskId)).call(connection);
@@ -49,27 +79,6 @@ public class TaskProcessor {
             connection.commit();
             return result;
         });
-
-        eventualResult.thenAcceptAsync(t -> CompletableFuture.runAsync(() -> startTask(t), taskContext));
-
-        return eventualResult;
-    }
-
-    public CompletionStage<Optional<Solution>> getSolution(int taskId){
-        return db.call(SolutionRepository.getSolutionByTaskId(taskId));
-    }
-
-    public CompletionStage<Optional<Task>> getTask(long id) {
-        return db.call(TaskRepository.getTask(id));
-    }
-
-    public CompletionStage<List<Task>> getAllTasks(){
-        return db.call(TaskRepository.getAll());
-    }
-
-    private Optional<Solution> checkIfSolutionExists(Problem problem){
-        //TODO: IMPLEMENT
-        return null;
     }
 
 
