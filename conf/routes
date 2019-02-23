@@ -2,12 +2,12 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
-POST /knapsack/tasks               controllers.knapsack.TaskController.createTask(request: Request)
+POST /knapsack/tasks               service.controllers.TaskController.createTask(request: Request)
 
-GET /knapsack/tasks/:id            controllers.knapsack.TaskController.getTask(id: String)
+GET /knapsack/tasks/:id            service.controllers.TaskController.getTask(id: String)
 
-GET /knapsack/solutions/:id        controllers.knapsack.SolutionController.getSolution(id: String)
+GET /knapsack/solutions/:id        service.controllers.SolutionController.getSolution(id: String)
 
-GET /knapsack/admin/tasks          controllers.knapsack.AdminController.getAllTasks
+GET /knapsack/admin/tasks          service.controllers.AdminController.getAllTasks
 
-GET /knapsack/admin/shutdown       controllers.knapsack.AdminController.shutdown
+GET /knapsack/admin/shutdown       service.controllers.AdminController.shutdown
