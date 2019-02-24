@@ -4,6 +4,8 @@ import database.util.ResultSetReadable;
 import lombok.Data;
 import service.json.data.TimeStamps;
 
+import static database.util.Numbers.toLong;
+
 @Data
 public class TaskResponse {
 
@@ -21,9 +23,9 @@ public class TaskResponse {
                 result.setStatus(resultSet.getString("STATUS").toLowerCase());
 
                 TimeStamps timeStamps = new TimeStamps();
-                timeStamps.setSubmitted((Long) resultSet.getObject("SUBMITTED"));
-                timeStamps.setStarted((Long) resultSet.getObject("STARTED"));
-                timeStamps.setCompleted((Long) resultSet.getObject("COMPLETED"));
+                timeStamps.setSubmitted(toLong(resultSet.getObject("SUBMITTED")));
+                timeStamps.setStarted(toLong(resultSet.getObject("STARTED")));
+                timeStamps.setCompleted(toLong((resultSet.getObject("COMPLETED"))));
 
                 result.setTimeStamps(timeStamps);
 

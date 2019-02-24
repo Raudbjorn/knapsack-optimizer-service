@@ -31,8 +31,6 @@ public class SolutionRepository {
 
     public static ConnectionCallable<Integer> insertSolution(Solution solution){
         return connection -> {
-
-            //"INSERT INTO SOLUTION(TASK_ID, PROBLEM_ID, ITEMS) VALUES (?, ?, ?)";
             PreparedStatement preparedStatement = connection.prepareStatement(INSERT, Statement.RETURN_GENERATED_KEYS);
             preparedStatement.setLong(1, solution.getTaskId());
             preparedStatement.setLong(2, solution.getProblemId());

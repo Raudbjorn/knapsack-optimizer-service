@@ -5,7 +5,7 @@ import lombok.Data;
 @Data
 public class Solution {
 
-    String items;
+    long[] items;
 
     Long time;
 
