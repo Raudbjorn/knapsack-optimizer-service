@@ -1,15 +1,15 @@
 package database.repositories;
 
 
-import dto.data.ProblemData;
-import tasks.models.Problem;
-import tasks.models.Task;
 import play.db.ConnectionCallable;
+import tasks.models.Problem;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Optional;
+
+import static database.util.ResultSetReadable.maybe;
 
 public class ProblemRepository {
 
@@ -19,33 +19,22 @@ public class ProblemRepository {
     private static final String GET_BY_TASK_ID =
             "SELECT * FROM PROBLEM WHERE TASK_ID = ?";
 
-    public static ConnectionCallable<Integer> saveProblem(ProblemData problem, Task task){
+    public static ConnectionCallable<Problem> saveProblem(Problem problem, long taskId){
         return connection -> {
             PreparedStatement problemStatement = connection.prepareStatement(INSERT, Statement.RETURN_GENERATED_KEYS);
-            problemStatement.setLong(1, task.getId());
+            problemStatement.setLong(1, taskId);
             problemStatement.setString(2, problem.toJson());
             problemStatement.executeUpdate();
-            return problemStatement.getGeneratedKeys().getInt(1);
+            return problem.withId(problemStatement.getGeneratedKeys().getLong(1));
         };
     }
 
-    public static ConnectionCallable<Problem> getProblemByTaskId(long taskId){
+    public static ConnectionCallable<Optional<Problem>> getProblemByTaskId(long taskId){
         return connection -> {
             PreparedStatement preparedStatement = connection.prepareStatement(GET_BY_TASK_ID);
             preparedStatement.setLong(1, taskId);
             ResultSet resultSet = preparedStatement.executeQuery();
-            return fromResultSet(resultSet);
+            return maybe(Problem.READ_RESULT_SET).read(resultSet);
         };
     }
-
-
-    private static Problem fromResultSet(ResultSet resultSet) throws SQLException {
-        ProblemData data = ProblemData.fromJson(resultSet.getString("JSON"));
-        return Problem.builder()
-                .id(resultSet.getLong("ID"))
-                .problemData(data)
-                .taskId(resultSet.getLong("TASK_ID"))
-                .build();
-    }
-
 }

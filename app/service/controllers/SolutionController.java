@@ -1,16 +1,11 @@
 package service.controllers;
 
-import database.repositories.SolutionRepository;
-import dto.responses.SolutionResponse;
-import io.vavr.control.Option;
 import io.vavr.control.Try;
-import service.RequestProcessor;
-import tasks.models.Solution;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Results;
-import tasks.TaskProcessor;
+import service.RequestProcessor;
 
 import javax.inject.Inject;
 import java.util.Optional;
@@ -29,7 +24,6 @@ public class SolutionController extends Controller {
     public CompletionStage<Result> getSolution(String taskId) {
         Optional<Long> maybeId = Try.of(() -> Long.parseLong(taskId)).toJavaOptional();
 
-        //TODO: SHOULD RETURN OPTIONAL!
         return maybeId.map(id -> requestProcessor
                 .getSolution(id)
                 .thenApply(Json::toJson)

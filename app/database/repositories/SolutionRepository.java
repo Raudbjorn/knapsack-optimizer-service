@@ -11,7 +11,7 @@ import java.sql.Statement;
 public class SolutionRepository {
 
     private static final String INSERT =
-            "INSERT INTO SOLUTION(JSON, TASK_ID, PROBLEM_ID) VALUES (?, ?, (SELECT MAX(ID) FROM PROBLEM WHERE TASK_ID = ?))";
+            "INSERT INTO SOLUTION(TASK_ID, PROBLEM_ID, ITEMS) VALUES (?, ?, ?)";
 
     private static final String GET_BY_TASK_ID =
             "SELECT * FROM SOLUTION WHERE TASK_ID = ?";
@@ -29,12 +29,14 @@ public class SolutionRepository {
 
 
 
-    public static ConnectionCallable<Integer> insertSolution(Solution solution, long taskId){
+    public static ConnectionCallable<Integer> insertSolution(Solution solution){
         return connection -> {
+
+            //"INSERT INTO SOLUTION(TASK_ID, PROBLEM_ID, ITEMS) VALUES (?, ?, ?)";
             PreparedStatement preparedStatement = connection.prepareStatement(INSERT, Statement.RETURN_GENERATED_KEYS);
-            preparedStatement.setString(1, Json.toJson(solution).toString());
-            preparedStatement.setLong(2, taskId);
-            preparedStatement.setLong(3, taskId);
+            preparedStatement.setLong(1, solution.getTaskId());
+            preparedStatement.setLong(2, solution.getProblemId());
+            preparedStatement.setString(3, Json.toJson(solution.getItems()).toString());
             preparedStatement.executeUpdate();
             return preparedStatement.getGeneratedKeys().getInt(1);
         };

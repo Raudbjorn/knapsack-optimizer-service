@@ -15,6 +15,6 @@ public class Solution {
 
     private Long taskId;
 
-    private long[] items;
+    private int[] items;
 
 }

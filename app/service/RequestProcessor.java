@@ -17,6 +17,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 
 import static database.util.ResultSetReadable.maybe;
+import static tasks.models.Problem.fromJson;
 
 @Singleton
 public class RequestProcessor {
@@ -31,9 +32,9 @@ public class RequestProcessor {
     }
 
     public CompletionStage<TasksResponse> getAllTasks(){
-        return db.call(TaskRepository.getAllTasks(TasksResponse.READ_RESULT_SET));
+        ResultSetProvider<TasksResponse> query = TaskRepository.getAllTasks();
+        return db.call(query.withReader(TasksResponse.READ_RESULT_SET));
     }
-
 
     public CompletionStage<Optional<SolutionResponse>> getSolution(long taskId) {
         ResultSetProvider<Optional<SolutionResponse>> query =
@@ -46,7 +47,7 @@ public class RequestProcessor {
     }
 
     public CompletionStage<TaskResponse> createTask(Problem problem){
-        return taskProcessor.submitProblem(problem).thenApply(TaskResponse::fromTask);
+        return taskProcessor.submitProblem(fromJson(problem)).thenApply(TaskResponse::fromTask);
     }
 
     public CompletionStage<Optional<TaskResponse>>getTask(long taskId) {
