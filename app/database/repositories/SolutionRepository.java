@@ -13,9 +13,6 @@ public class SolutionRepository {
     private static final String INSERT =
             "INSERT INTO SOLUTION(TASK_ID, PROBLEM_ID, ITEMS) VALUES (?, ?, ?)";
 
-    private static final String GET_BY_TASK_ID =
-            "SELECT * FROM SOLUTION WHERE TASK_ID = ?";
-
     private static final String GET_SOLUTION_DATA =
         "SELECT T.ID AS TASK_ID,\n" +
         "       T.STARTED AS TASK_STARTED,\n" +
@@ -34,24 +31,11 @@ public class SolutionRepository {
             PreparedStatement preparedStatement = connection.prepareStatement(INSERT, Statement.RETURN_GENERATED_KEYS);
             preparedStatement.setLong(1, solution.getTaskId());
             preparedStatement.setLong(2, solution.getProblemId());
-            preparedStatement.setString(3, Json.toJson(solution.getItems()).toString());
+            preparedStatement.setString(3, Json.stringify(Json.toJson(solution.getItems())));
             preparedStatement.executeUpdate();
             return preparedStatement.getGeneratedKeys().getInt(1);
         };
     }
-
-    /*
-    public static ConnectionCallable<Optional<Solution>> getSolutionByTaskId(long taskId){
-        return connection -> {
-            PreparedStatement preparedStatement = connection.prepareStatement(GET_BY_TASK_ID);
-            preparedStatement.setLong(1, taskId);
-            ResultSet resultSet = preparedStatement.executeQuery();
-            return !resultSet.next() ? Optional.empty() : Optional.of(fromResultSet(resultSet));
-        };
-    }
-    */
-
-
 
     public static <T> ResultSetProvider<T> getSolutionResponseDataByTaskId(long taskId){
         return reader -> connection -> {

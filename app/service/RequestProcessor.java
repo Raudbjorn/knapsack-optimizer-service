@@ -9,6 +9,7 @@ import service.json.data.Problem;
 import service.json.responses.SolutionResponse;
 import service.json.responses.TaskResponse;
 import service.json.responses.TasksResponse;
+import service.validation.valid.ValidProblem;
 import tasks.TaskProcessor;
 
 import javax.inject.Inject;
@@ -46,7 +47,7 @@ public class RequestProcessor {
         return db.call(query.withReader(reader));
     }
 
-    public CompletionStage<TaskResponse> createTask(Problem problem){
+    public CompletionStage<TaskResponse> createTask(ValidProblem problem){
         return taskProcessor.submitProblem(fromJson(problem)).thenApply(TaskResponse::fromTask);
     }
 
