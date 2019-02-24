@@ -11,3 +11,5 @@ GET /knapsack/solutions/:id        service.controllers.SolutionController.getSol
 GET /knapsack/admin/tasks          service.controllers.AdminController.getAllTasks
 
 GET /knapsack/admin/shutdown       service.controllers.AdminController.shutdown
+
+DELETE /knapsack/tasks/:id         service.controllers.TaskController.cancelTask(id: String)

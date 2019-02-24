@@ -13,9 +13,11 @@ import tasks.solvers.ServiceKnapsackSolver;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static database.util.ResultSetReadable.maybe;
 import static tasks.models.Task.TaskStatus.COMPLETED;
@@ -27,6 +29,8 @@ public class TaskProcessor {
     private final Db db;
     private final TaskExecutionContext taskContext;
     private final ServiceKnapsackSolver solver;
+
+    private static final Map<Long, CompletionStage<Void>> RUNNING_TASKS = new ConcurrentHashMap();
 
     @Inject
     public TaskProcessor(Db db, TaskExecutionContext context, ServiceKnapsackSolver solver) {
@@ -68,11 +72,14 @@ public class TaskProcessor {
     private CompletionStage<Task> createAndStart(Problem problem) {
         CompletionStage<Task> taskSubmitted = createSubmittedTask(problem);
 
-        taskSubmitted.thenAccept(t -> CompletableFuture.runAsync(() ->
-                startTask(t)
-                        .thenApply(solver::solve)
-                        .thenApply(this::completeTask),
-        taskContext));
+        taskSubmitted.thenAccept(t -> {
+            CompletionStage<Void> runningTask = CompletableFuture.runAsync(() ->
+                            startTask(t)
+                                    .thenApply(solver::solve)
+                                    .thenApply(this::completeTask),
+                    taskContext);
+            RUNNING_TASKS.put(t.getId(), runningTask);
+        });
 
         return taskSubmitted;
     }
@@ -93,9 +100,21 @@ public class TaskProcessor {
             connection.setAutoCommit(false);
             TaskRepository.updateTaskStatus(solution.getTaskId(), COMPLETED).call(connection);
             SolutionRepository.insertSolution(solution).call(connection);
+            RUNNING_TASKS.remove(solution.getTaskId());
             connection.commit();
             return true;
         }, taskContext);
+    }
+
+    public boolean cancelTask(long taskId){
+        CompletionStage<Void> task = RUNNING_TASKS.get(taskId);
+        if(null == task){
+            return false;
+        } else {
+            task.toCompletableFuture().cancel(true);
+            RUNNING_TASKS.remove(taskId);
+            return true;
+        }
     }
 
 }

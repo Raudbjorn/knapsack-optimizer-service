@@ -26,8 +26,10 @@ public class SolutionController extends Controller {
 
         return maybeId.map(id -> requestProcessor
                 .getSolution(id)
-                .thenApply(Json::toJson)
-                .thenApply(Results::ok)
+                .thenApply(maybeSolution -> maybeSolution
+                        .map(Json::toJson)
+                        .map(Results::ok)
+                        .orElse(notFound()))
         ).orElse(CompletableFuture.completedFuture(notFound()));
     }
 }

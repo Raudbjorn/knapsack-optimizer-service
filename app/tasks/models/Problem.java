@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Streams;
 import database.util.ResultSetReadable;
-import io.vavr.collection.Stream;
 import lombok.Builder;
 import lombok.Value;
 import lombok.experimental.Wither;

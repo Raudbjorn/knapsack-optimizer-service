@@ -5,7 +5,6 @@ import database.repositories.SolutionRepository;
 import database.repositories.TaskRepository;
 import database.util.ResultSetProvider;
 import database.util.ResultSetReadable;
-import service.json.data.Problem;
 import service.json.responses.SolutionResponse;
 import service.json.responses.TaskResponse;
 import service.json.responses.TasksResponse;
@@ -57,6 +56,8 @@ public class RequestProcessor {
         return db.call(query.withReader(reader));
     }
 
-
+    public boolean cancelTask(long taskId){
+        return taskProcessor.cancelTask(taskId);
+    }
 
 }

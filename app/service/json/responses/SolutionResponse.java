@@ -2,16 +2,12 @@ package service.json.responses;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.google.common.collect.Streams;
 import database.util.ResultSetReadable;
 import io.vavr.collection.Stream;
 import lombok.Data;
 import play.libs.Json;
 import service.json.data.Problem;
 import service.json.data.Solution;
-
-import java.util.function.Function;
-import java.util.function.LongFunction;
 
 @Data
 public class SolutionResponse {

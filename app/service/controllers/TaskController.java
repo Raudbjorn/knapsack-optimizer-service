@@ -5,17 +5,11 @@ import io.vavr.collection.Seq;
 import io.vavr.control.Try;
 import io.vavr.control.Validation;
 import play.libs.Json;
-import play.mvc.BodyParser;
-import play.mvc.Controller;
-import play.mvc.Http;
-import play.mvc.Result;
-import play.mvc.Results;
+import play.mvc.*;
 import service.RequestProcessor;
-import service.json.data.Problem;
 import service.json.requests.ProblemRequest;
 import service.validation.ServiceError;
 import service.validation.valid.ValidProblem;
-import tasks.TaskProcessor;
 
 import javax.inject.Inject;
 import java.util.Optional;
@@ -45,10 +39,10 @@ public class TaskController extends Controller {
         Validation<Seq<ServiceError>, ValidProblem> checkRequest =
                 validateProblemRequest(problemRequest);
 
-       return Match(checkRequest).of(
+        return Match(checkRequest).of(
                 Case($Valid($()), problem -> requestProcessor.createTask(problem)
-                                .thenApply(Json::toJson)
-                                .thenApply(json -> status(ACCEPTED, json))
+                        .thenApply(Json::toJson)
+                        .thenApply(json -> status(ACCEPTED, json))
                 ),
                 Case($Invalid($()), ServiceError::toResult)
         );
@@ -58,8 +52,20 @@ public class TaskController extends Controller {
         Optional<Long> maybeId = Try.of(() -> Long.parseLong(taskId)).toJavaOptional();
 
         return maybeId.map(id -> requestProcessor.getTask(id)
-                .thenApply(Json::toJson)
-                .thenApply(Results::ok)).orElse(CompletableFuture.completedFuture(notFound()));
+                .thenApply(maybeTask -> maybeTask
+                        .map(Json::toJson)
+                        .map(Results::ok)
+                        .orElse(notFound())))
+                .orElse(CompletableFuture.completedFuture(notFound()));
+    }
+
+    public Result cancelTask(String taskId) {
+        Optional<Long> maybeId = Try.of(() -> Long.parseLong(taskId)).toJavaOptional();
+
+        return maybeId.map(id -> requestProcessor.cancelTask(id)
+                ? ok()
+                : notAcceptable())
+                .orElse(notFound());
     }
 
 }

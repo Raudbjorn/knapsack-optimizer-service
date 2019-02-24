@@ -1,16 +1,13 @@
 package service.validation;
 
-import io.vavr.Predicates;
 import io.vavr.collection.Seq;
 import io.vavr.control.Validation;
-import scala.math.BigInt;
 import service.json.data.Problem;
 import service.json.requests.ProblemRequest;
 import service.validation.valid.ValidProblem;
 
 import java.math.BigInteger;
 import java.util.List;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 import static service.validation.ServiceError.*;
