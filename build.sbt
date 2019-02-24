@@ -1,6 +1,6 @@
 name := """knapsack-optimizer-service"""
 organization := "is.sveinbjorn"
-
+maintainer := "raubjorn@gmail.com"
 version := "1.0-SNAPSHOT"
 
 lazy val root = (project in file(".")).enablePlugins(PlayJava)

@@ -15,7 +15,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Stream;
 
-import static util.Throwables.propagate;
+import static apputil.Throwables.propagate;
 
 @Singleton
 public class Db {
