@@ -16,7 +16,4 @@ libraryDependencies += "com.typesafe.play" %% "play-native-loader" % "1.0.0"
 libraryDependencies += "org.xerial" % "sqlite-jdbc" % "3.25.2"
 
 
-javaOptions += "-Djava.library.path=/home/sg/code/knapsack-optimizer-service/lib/"
-
-
 
