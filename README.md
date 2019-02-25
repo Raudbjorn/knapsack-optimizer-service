@@ -6,9 +6,9 @@
 In order for the application to even start it needs to be aware of the native binaries required to 
 run the solution code(which are provided in the /lib-folder).
 It's easiest to simply add "-Djava.library.path=lib/" to the JAVA_OPTS environment
-variable, or if that does not work, try adding the absolute path to the /lib folder.
+variable, or if that does not work, try adding the absolute path to the /lib-folder.
 
-The server can also be started in dev-mode by passing the options through SBT using the "-J"-suffix, 
+The server can also be started in dev-mode by passing the options through SBT using the "-J"-prefix, 
 like so: `$ sbt run -J-Djava.library.path=lib/`
 
 ### Running in container
@@ -59,15 +59,15 @@ Creating a new task:
 
 * Compare the problem with other problems persisted into the database.
 * If a solution is found, return the task associated with it.
-* If not, persist the task and spawn a new thread to compute the solution, and responding to the request appropriately on the current thread.
+* If not, persist the task and spawn a new thread to compute the solution, and respond to the request appropriately on the current thread.
 * Naive cancellation functionality is implemented by storing a reference to running tasks in a 
 `java.util.concurrent.ConcurrentHashMap<Long, CompletionStage<Void>>`, adding them 
 when they get started, and removing them once they're completed(or when they are cancelled by the user).
 
 #### Configuration/Thread pool
 
-Since the tasks are potentially computationally intensive, rather than block the calling thread, I decided on create a separate 
-thread pool to run them, defined in `tasks.context.TaskExecutionContext` and configured in [application.conf](/blob/master/conf/application.conf),
+Since the tasks are potentially computationally intensive, rather than block the calling thread, I decided to create a separate 
+thread pool to run them, defined in `tasks.context.TaskExecutionContext` and configured in [application.conf](/conf/application.conf),
 I have it currently set to 4 threads.
 
 ### Database
@@ -86,12 +86,12 @@ that automatically turns potentially empty result sets into `java.util.Optional<
 #### Configuration/Thread pool
 
 In order to not block any of the service threads, all calls to the database go through a 
-different thread pool defined in [database.context.DatabaseExecutionContext](/blob/master/app/database/context/DatabaseExecutionContext.java) and configured in 
-[application.conf](/blob/master/conf/application.conf).
+different thread pool defined in [database.context.DatabaseExecutionContext](/app/database/context/DatabaseExecutionContext.java) and configured in 
+[application.conf](/conf/application.conf).
 According to best practices this should be set to ((physical_core_count * 2) + effective_spindle_count)
-on the machine running the database -currently I have it set at 4 for the SqLite database I configured.
+on the machine running the database -currently I have it set to 4 for the SqLite database I configured.
 
-There is also one trigger in the database: [UPDATE_STATUS_TIME](/blob/master/conf/database/UPDATE_STATUS_TIME.sql),
- it simply records the times of when a task transitions from one status to another, 
+There is also one trigger in the database: [UPDATE_STATUS_TIME](/conf/database/UPDATE_STATUS_TIME.sql),
+ it simply records the times when a task transitions from one status to another, 
 it seems like that doing that sort of thing consistently in code is very difficult to do, so it's best left to the database.
 
