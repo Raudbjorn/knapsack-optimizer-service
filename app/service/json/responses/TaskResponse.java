@@ -1,5 +1,6 @@
 package service.json.responses;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import database.util.ResultSetReadable;
 import lombok.Data;
 import service.json.data.TimeStamps;
@@ -13,6 +14,7 @@ public class TaskResponse {
 
     private String status;
 
+    @JsonProperty("timestamps")
     private TimeStamps timeStamps;
 
     public static ResultSetReadable<TaskResponse> READ_RESULT_SET =

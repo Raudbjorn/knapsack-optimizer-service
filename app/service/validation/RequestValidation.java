@@ -50,7 +50,7 @@ public class RequestValidation {
     }
 
     static Validation<ServiceError, BigInteger> validateCapacity(BigInteger capacity) {
-        return GREATER_THAN_MAX.and(LOWER_THAN_MIN).test(capacity)
+        return GREATER_THAN_MAX.or(LOWER_THAN_MIN).test(capacity)
                 ? Validation.invalid(CAPACITY_OUT_OF_BOUNDS_ERROR)
                 : Validation.valid(capacity);
     }

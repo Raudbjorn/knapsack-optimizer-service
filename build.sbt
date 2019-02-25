@@ -9,6 +9,7 @@ scalaVersion := "2.12.8"
 
 libraryDependencies += guice
 libraryDependencies += javaJdbc
+libraryDependencies += ws % "test"
 
 libraryDependencies += "org.projectlombok" % "lombok" % "1.18.6" % "provided"
 libraryDependencies += "io.vavr" % "vavr" % "0.9.3"
