@@ -2,10 +2,31 @@
 
 ##Running the application
 
-SBT version 1.1.2 is required to build the application.
+**IMPORTANT**:
+In order for the application to even start it needs to be aware of the native binaries required to 
+run the solution code(which are provided in the /lib-folder).
+It's easiest to simply add "-Djava.library.path=lib/" to the JAVA_OPTS environment
+variable, or if that does not work, try adding the absolute path to the /lib folder.
 
-    $sbt dist
-    $docker build .
+The server can also be started in Dev-mode by passing the options through SBT using the "-J"-suffix, 
+like so: `$ sbt run -J-Djava.library.path=lib/`
+
+### Running in container
+
+SBT version 1.1.2 is required to build the application, and a docker file is provided.
+
+    [sg@Sveinbjorn knapsack-optimizer-service]$ sbt dist
+    [...]
+    [success] All package validations passed
+    [info] Your package is ready in /home/sg/code/knapsack-optimizer-service/target/universal/knapsack-optimizer-service-1.0-SNAPSHOT.zip
+    [...]
+    [sg@Sveinbjorn knapsack-optimizer-service]$ docker build .
+    [...]
+    Removing intermediate container 6482d3d6835e
+     ---> 0e442bdf6442
+    Successfully built 0e442bdf6442
+    [sg@Sveinbjorn knapsack-optimizer-service]$ docker run -d -p 9000:9000 0e442bdf6442
+    d7b2fc7d57cb68270e40017838e9f0c4a4f657d12c56630a46a200c1a33e6560
 
 ##Architecture
 
