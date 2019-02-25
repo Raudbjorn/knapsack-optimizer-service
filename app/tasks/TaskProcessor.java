@@ -87,7 +87,7 @@ public class TaskProcessor {
     private CompletionStage<Problem> startTask(Task task) {
         return db.call(connection -> {
             connection.setAutoCommit(false);
-            TaskRepository.updateTaskStatus(task.getId(), STARTED).call(connection);
+            TaskRepository.updateTaskStatus(task.getId(), STARTED.name()).call(connection);
             Problem problem = ProblemRepository.getProblemByTaskId(task.getId()).call(connection)
                     .orElseThrow(() -> new RuntimeException(String.format("Could not find problem for task: %s", task)));
             connection.commit();
@@ -98,7 +98,7 @@ public class TaskProcessor {
     private CompletionStage<Boolean> completeTask(Solution solution) {
         return db.call(connection -> {
             connection.setAutoCommit(false);
-            TaskRepository.updateTaskStatus(solution.getTaskId(), COMPLETED).call(connection);
+            TaskRepository.updateTaskStatus(solution.getTaskId(), COMPLETED.name()).call(connection);
             SolutionRepository.insertSolution(solution).call(connection);
             RUNNING_TASKS.remove(solution.getTaskId());
             connection.commit();

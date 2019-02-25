@@ -45,10 +45,10 @@ public class TaskRepository {
         };
     }
 
-    public static ConnectionCallable<Integer> updateTaskStatus(long id, Task.TaskStatus status) {
+    public static ConnectionCallable<Integer> updateTaskStatus(long id, String status) {
         return connection -> {
             PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_STATUS);
-            preparedStatement.setString(1, status.name());
+            preparedStatement.setString(1, status);
             preparedStatement.setLong(2, id);
             return preparedStatement.executeUpdate();
         };
