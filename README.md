@@ -50,7 +50,7 @@ to have any coupling with any other part of the code.
 ### Tasks
 
 As suggested, I'm using [Google's OR-Tools](https://developers.google.com/optimization/), although I probably shouldn't have
-since, because of some class loader issue, running native code with the Play Framework is incredibly difficult to get working,
+since, because of a class loader issue, running native code with the Play Framework is incredibly difficult to get working,
 so much so that there's a [Play Native Loader](https://github.com/playframework/play-native-loader) library maintained by it's creators(which I'm using).
 
 All task logic is found in `tasks.TaskProcessor`, which is the only part of the tasks package to have any coupling with any other part of the code.
@@ -59,7 +59,7 @@ Creating a new task:
 
 * Compare the problem with other problems persisted into the database.
 * If a solution is found, return the task associated with it.
-* If not, persist the task and spawn a new thread to compute the solution.
+* If not, persist the task and spawn a new thread to compute the solution, and responding to the request appropriately on the current thread.
 * Naive cancellation functionality is implemented by storing a reference to running tasks in a 
 `java.util.concurrent.ConcurrentHashMap<Long, CompletionStage<Void>>`, adding them 
 when they get started, and removing them once they're completed(or when they are cancelled by the user).
@@ -80,13 +80,8 @@ This was achieved by having every(shared) query to the database:
 * ...any value `<T>`.
 
 This not only means loose coupling, but also lets the database implement simple utility functions
-such as the "maybe" function that automatically turns potentially empty result sets into `java.util.Optional<T>`:
-
-    static <T> ResultSetReadable<Optional<T>> maybe(ResultSetReadable<T> reader){
-        return r -> r.next()
-                ? Optional.ofNullable(reader.read(r))
-                : Optional.empty();
-    }
+such as [the "maybe" function](/blob/74a43e2da9f4c32cb504c6fa15d488028149eec0/app/database/util/ResultSetReadable.java#L13) 
+that automatically turns potentially empty result sets into `java.util.Optional<T>`.
 
 #### Configuration/Thread pool
 
