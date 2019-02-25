@@ -80,7 +80,7 @@ This was achieved by having every(shared) query to the database:
 * ...any value `<T>`.
 
 This not only means loose coupling, but also lets the database implement simple utility functions
-such as [the "maybe" function](/blob/74a43e2da9f4c32cb504c6fa15d488028149eec0/app/database/util/ResultSetReadable.java#L13) 
+such as [the "maybe" function](/blob/c47ec899f3c41b7116be6f31863d036d2c26efea/app/database/util/ResultSetReadable.java#L13) 
 that automatically turns potentially empty result sets into `java.util.Optional<T>`.
 
 #### Configuration/Thread pool
