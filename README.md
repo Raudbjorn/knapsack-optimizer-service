@@ -1,4 +1,5 @@
 # Knapsack Optimizer Service
+A solution by Sveinbjörn Geirsson
 
 ## Running the application
 
