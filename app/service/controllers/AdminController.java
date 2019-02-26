@@ -32,7 +32,7 @@ public class AdminController extends Controller {
 
     public CompletionStage<Result> shutdown(){
         CompletableFuture.runAsync(coordinatedShutdown::run).thenRun(() -> System.exit(0));
-        return CompletableFuture.completedFuture(ok());
+        return CompletableFuture.completedFuture(ok("Service shutting down.."));
     }
 
 }

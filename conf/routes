@@ -10,6 +10,7 @@ GET /knapsack/solutions/:id        service.controllers.SolutionController.getSol
 
 GET /knapsack/admin/tasks          service.controllers.AdminController.getAllTasks
 
-GET /knapsack/admin/shutdown       service.controllers.AdminController.shutdown
+POST /knapsack/admin/shutdown       service.controllers.AdminController.shutdown
 
+#This is the "cancel task" endpoint
 DELETE /knapsack/tasks/:id         service.controllers.TaskController.cancelTask(id: String)

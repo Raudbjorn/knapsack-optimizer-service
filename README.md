@@ -36,6 +36,51 @@ Tests are run with SBT
     [...]
     [info] Passed: Total 6, Failed 0, Errors 0, Passed 6
     [success] Total time: 5 s, completed Feb 25, 2019 9:57:29 PM
+    
+## API
+
+### Endpoints
+
+**POST** /knapsack/tasks
+
+**GET** /knapsack/tasks/:id
+
+**GET** /knapsack/solutions/:id
+
+**GET** /knapsack/admin/tasks          
+
+**POST** /knapsack/admin/shutdown       
+
+**DELETE** /knapsack/tasks/:id (This is the "cancel task" endpoint)
+
+More information can be found in the [routes-file](/conf/routes).
+
+### Example
+
+I tried to follow the example session in the document I received as exactly as I could.
+
+
+    [sg@Sveinbjorn knapsack-optimizer-service]$ sbt dist
+    [...]
+    [sg@Sveinbjorn knapsack-optimizer-service]$ docker build .
+    [...]
+    Successfully built 8e5621fb371b
+    [sg@Sveinbjorn knapsack-optimizer-service]$ docker run -d -p 9000:9000 8e5621fb371b
+    168f6bb42cc0ec3c1814a1b6a3538cef07049b951a3b78d1c6ce466dec5d9bf4
+    [sg@Sveinbjorn knapsack-optimizer-service]$ curl -XPOST -H 'Content-type: application/json' http://localhost:9000/knapsack/tasks \
+    > -d '{"problem": {"capacity": 60, "weights": [10, 20, 33], "values": [10, 3, 30]}}'
+    {"task":"1","status":"submitted","timestamps":{"submitted":1551188693,"started":null,"completed":null}}
+    [sg@Sveinbjorn knapsack-optimizer-service]$ curl -XGET http://localhost:9000/knapsack/tasks/1
+    {"task":"1","status":"completed","timestamps":{"submitted":1551188693,"started":1551188693,"completed":1551188693}}
+    [sg@Sveinbjorn knapsack-optimizer-service]$ curl -XGET http://localhost:9000/knapsack/solutions/1
+    {"task":"1","problem":{"capacity":60,"weights":[10,20,33],"values":[10,3,30]},"solution":{"items":[0,2],"time":0}}
+    [sg@Sveinbjorn knapsack-optimizer-service]$ curl -XGET http://localhost:9000/knapsack/admin/tasks
+    {"tasks":{"submitted":[],"started":[],"completed":[{"task":"1","status":"completed","timestamps":{"submitted":1551188693,"started":1551188693,"completed":1551188693}}]}}
+    [sg@Sveinbjorn knapsack-optimizer-service]$ curl -XGET http://localhost:9000/knapsack/admin/shutdown
+    Service shutting down..
+    [sg@Sveinbjorn knapsack-optimizer-service]$ docker ps -n 1
+    CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS                          PORTS               NAMES
+    168f6bb42cc0        8e5621fb371b        "/usr/src/knapsack-o…"   10 minutes ago      Exited (0) About a minute ago                       wizardly_swanson
 
 ## Architecture
 
