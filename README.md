@@ -27,6 +27,15 @@ SBT version 1.1.2 is required to build the application, and a docker file is pro
     Successfully built 0e442bdf6442
     [sg@Sveinbjorn knapsack-optimizer-service]$ docker run -d -p 9000:9000 0e442bdf6442
     d7b2fc7d57cb68270e40017838e9f0c4a4f657d12c56630a46a200c1a33e6560
+    
+### Running tests
+
+Tests are run with SBT
+
+    [sg@Sveinbjorn knapsack-optimizer-service]$ sbt test
+    [...]
+    [info] Passed: Total 6, Failed 0, Errors 0, Passed 6
+    [success] Total time: 5 s, completed Feb 25, 2019 9:57:29 PM
 
 ## Architecture
 
